@@ -1,7 +1,7 @@
 package models;
 
 public class Book {
-    private int counter = 1;
+    private static int counter = 1;
     private int bookID;
     private String title;
     private String author;
@@ -9,6 +9,18 @@ public class Book {
     private int quantity;
 
     public Book(String title, String author, double price, int quantity) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be empty");
+        }
+        if (author == null || author.trim().isEmpty()) {
+            throw new IllegalArgumentException("Author cannot be empty");
+        }
+        if (price <= 0) {
+            throw new IllegalArgumentException("Price must be positive");
+        }
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
         this.bookID = counter++;
         this.title = title;
         this.author = author;
@@ -38,6 +50,9 @@ public class Book {
     }
 
     public void setQuantity(int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
         this.quantity = quantity;
     }
 
@@ -45,17 +60,16 @@ public class Book {
     @Override
     public String toString() {
         return String.format("| %-7d | %-30s | %-20s | $%-8.2f | %-8d |",
-                bookID,
-                title.length() > 30 ? title.substring(0, 27) + "..." : title,
-                author.length() > 20 ? author.substring(0, 17) + "..." : author,
-                price,
-                quantity);
+            bookID,
+            title.length() > 30 ? title.substring(0, 27) + "..." : title,
+            author.length() > 20 ? author.substring(0, 17) + "..." : author,
+            price,
+            quantity);
     }
 
-    // helper static method
     public static String getTableHeader() {
-        return String.format("| %-7s | %-30s | %-20s | %-9s | %-8s |\n%s",
-                "BookID", "Title", "Author", "Price", "Quantity",
-                "-".repeat(87));
+        return String.format("| %-7s | %-30s | %-20s | %-9s | %-8s |%n%s",
+            "ID", "Title", "Author", "Price", "Stock",
+            "-".repeat(87));
     }
 }
