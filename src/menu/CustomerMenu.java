@@ -12,11 +12,13 @@ public class CustomerMenu {
     private final BookService bookService;
     private final OrderService orderService;
     private final Scanner scanner;
+    private final MainMenu mainMenu;
 
-    public CustomerMenu(BookService bookService, OrderService orderService) {
+    public CustomerMenu(BookService bookService, OrderService orderService, MainMenu mainMenu) {
         this.bookService = bookService;
         this.orderService = orderService;
         this.scanner = new Scanner(System.in);
+        this.mainMenu = mainMenu;
     }
 
     public void show() {
@@ -48,6 +50,7 @@ public class CustomerMenu {
                     trackOrder();
                     break;
                 case "6":
+                    mainMenu.start();
                     return;
                 default:
                     System.out.println("Invalid choice");
