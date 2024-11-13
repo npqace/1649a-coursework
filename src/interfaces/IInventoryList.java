@@ -1,12 +1,13 @@
-package data_structures;
+package interfaces;
 
-public interface IBookList<E> {
+import data_structures.InventoryItem;
+
+public interface IInventoryList<E> {
     boolean add(E book, int quantity);
-    BookEntry<E>[] getEntries();
+    InventoryItem<E>[] getEntries();
     int size();
     boolean isEmpty();
     void remove(E book);
-    BookEntry<E> removeAtIndex(int index);
     int getQuantities(E book);
     int indexOf(E book);
     boolean contains(E book);

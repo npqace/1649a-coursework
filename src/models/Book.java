@@ -37,12 +37,33 @@ public class Book {
         return title;
     }
 
+    public void setTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be empty");
+        }
+        this.title = title;
+    }
+
     public String getAuthor() {
         return author;
     }
 
+    public void setAuthor(String author) {
+        if (author == null || author.trim().isEmpty()) {
+            throw new IllegalArgumentException("Author cannot be empty");
+        }
+        this.author = author;
+    }
+
     public double getPrice() {
         return price;
+    }
+
+    public void setPrice(double price) {
+        if (price <= 0) {
+            throw new IllegalArgumentException("Price must be positive");
+        }
+        this.price = price;
     }
 
     public int getQuantity() {
@@ -56,20 +77,44 @@ public class Book {
         this.quantity = quantity;
     }
 
+    public String getDisplayQuantity() {
+        if (quantity > 0) {
+            return String.valueOf(quantity);
+        } else {
+            return "Out of Stock";
+        }
+    }
+
     // toString
     @Override
     public String toString() {
-        return String.format("| %-7d | %-30s | %-20s | $%-8.2f | %-8d |",
-            bookID,
-            title.length() > 30 ? title.substring(0, 27) + "..." : title,
-            author.length() > 20 ? author.substring(0, 17) + "..." : author,
-            price,
-            quantity);
+        StringBuilder result = new StringBuilder();
+        result.append("| ")
+                .append(String.format("%-4d", bookID))
+                .append(" | ")
+                .append(getTruncatedString(title, 30))
+                .append(" | ")
+                .append(getTruncatedString(author, 20))
+                .append(" | $")
+                .append(String.format("%-8.2f", price))
+                .append(" | ")
+                .append(String.format("%-12s", getDisplayQuantity()))
+                .append(" |");
+
+        return result.toString();
+    }
+
+    private String getTruncatedString(String input, int maxLength) {
+        if (input.length() > maxLength) {
+            return input.substring(0, maxLength - 3) + "...";
+        } else {
+            return String.format("%-" + maxLength + "s", input);
+        }
     }
 
     public static String getTableHeader() {
         return String.format("| %-7s | %-30s | %-20s | %-9s | %-8s |%n%s",
-            "ID", "Title", "Author", "Price", "Stock",
-            "-".repeat(87));
+                "ID", "Title", "Author", "Price", "Stock",
+                "-".repeat(87));
     }
 }

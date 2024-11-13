@@ -1,6 +1,6 @@
-package data_structures;
+package interfaces;
 
-public interface IList<E> {
+public interface IOrderList<E> {
     boolean add(E element);
     E get(int index);
     E remove(int index);
