@@ -4,21 +4,30 @@ import services.BookService;
 import services.OrderService;
 import java.util.Scanner;
 
+import data_structures.NavigationStack;
+
 public class MainMenu {
     private final AdminMenu adminMenu;
     private final CustomerMenu customerMenu;
     private final Scanner scanner;
+    private final NavigationStack<Runnable> navigationStack;
 
     public MainMenu(BookService bookService, OrderService orderService) {
         if (bookService == null || orderService == null) {
             throw new IllegalArgumentException("BookService and OrderService cannot be null");
         }
-        this.adminMenu = new AdminMenu(bookService, orderService);
-        this.customerMenu = new CustomerMenu(bookService, orderService);
+        this.adminMenu = new AdminMenu(bookService, orderService, this);
+        this.customerMenu = new CustomerMenu(bookService, orderService, this);
         this.scanner = new Scanner(System.in);
+        this.navigationStack = new NavigationStack<>();
     }
 
     public void start() {
+        navigationStack.push(this::showMainMenu);
+        showMainMenu();
+    }
+
+    public void showMainMenu() {
         while (true) {
             System.out.println("\n===== Bookstore Management System =====");
             System.out.print("Please choose your role (admin/customer/exit): ");
@@ -26,18 +35,12 @@ public class MainMenu {
 
             switch (role) {
                 case "admin":
-                    try {
-                        adminMenu.show();
-                    } catch (Exception e) {
-                        System.out.println("An error occurred in the Admin Menu: " + e.getMessage());
-                    }
+                    navigationStack.push(this::showMainMenu);
+                    adminMenu.show();
                     break;
                 case "customer":
-                    try {
-                        customerMenu.show();
-                    } catch (Exception e) {
-                        System.out.println("An error occurred in the Customer Menu: " + e.getMessage());
-                    }
+                    navigationStack.push(this::showMainMenu);
+                    customerMenu.show();
                     break;
                 case "exit":
                     System.out.println("Thank you for using our system!");
