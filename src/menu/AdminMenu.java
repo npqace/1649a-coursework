@@ -13,11 +13,13 @@ public class AdminMenu {
     private final BookService bookService;
     private final OrderService orderService;
     private final Scanner scanner;
+    private final MainMenu mainMenu;
 
-    public AdminMenu(BookService bookService, OrderService orderService) {
+    public AdminMenu(BookService bookService, OrderService orderService, MainMenu mainMenu) {
         this.bookService = bookService;
         this.orderService = orderService;
         this.scanner = new Scanner(System.in);
+        this.mainMenu = mainMenu;
     }
 
     public void show() {
@@ -65,6 +67,7 @@ public class AdminMenu {
                     updateOrderStatus();
                     break;
                 case "10":
+                    mainMenu.start();
                     return;
                 default:
                     System.out.println("Invalid choice");
