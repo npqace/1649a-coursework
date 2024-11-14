@@ -23,6 +23,7 @@ A Java-based command-line application for managing a bookstore's inventory and o
 - `OrderQueue`: Custom queue implementation for order processing (FIFO)
 - `InventoryList`: Generic list implementation for book inventory management
 - `InventoryItem`: Generic wrapper class for items with quantity
+- `NavigationStack`: Custom stack implementation for managing navigation history
 
 ## Algorithms
 - Binary Search: For finding books by ID
@@ -31,19 +32,22 @@ A Java-based command-line application for managing a bookstore's inventory and o
 
 ## Project Structure
 ```
-src/
-├── algorithms/
-│ ├── SearchAlgorithm.java
-│ └── SortAlgorithm.java
+src/ 
+
+├── algorithms/ 
+│ ├── SearchAlgorithm.java 
+│ └── SortAlgorithm.java 
 ├── data/ 
 │ └── TestData.java 
 ├── data_structures/ 
 │ ├── InventoryItem.java 
 │ ├── InventoryList.java 
-│ └── OrderQueue.java 
+│ ├── OrderQueue.java 
+│ └── NavigationStack.java 
 ├── interfaces/ 
 │ ├── IInventoryList.java 
-│ └── IOrderQueue.java 
+│ ├── IOrderQueue.java 
+│ └── IStack.java 
 ├── menu/ 
 │ ├── AdminMenu.java 
 │ ├── CustomerMenu.java 
@@ -102,6 +106,9 @@ src/
 - In-memory data structures for inventory and orders
 - FIFO order processing queue
 - Automated ID generation for books and orders
+
+### Navigation Management
+- Stack-based navigation using `NavigationStack` to manage navigation history and allow users to go back to previous menus
 
 ## Future Improvements
 - Persistent data storage
