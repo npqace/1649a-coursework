@@ -41,6 +41,7 @@ public class AdminMenu {
             switch (choice) {
                 case "1":
                     bookService.displayBooks(SortBy.ID);
+                    waitForKeyPress();
                     break;
                 case "2":
                     addNewBook();
@@ -56,12 +57,15 @@ public class AdminMenu {
                     break;
                 case "6":
                     orderService.displayAllOrders();
+                    waitForKeyPress();
                     break;
                 case "7":
                     orderService.processNextPendingOrder();
+                    waitForKeyPress();
                     break;
                 case "8":
                     orderService.displayActiveOrders();
+                    waitForKeyPress();
                     break;
                 case "9":
                     updateOrderStatus();
@@ -93,6 +97,7 @@ public class AdminMenu {
         } catch (Exception e) {
             System.out.println("Failed to add book: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void updateBookDetails() {
@@ -123,6 +128,7 @@ public class AdminMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void updateBookStock() {
@@ -142,6 +148,7 @@ public class AdminMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void removeBook() {
@@ -159,6 +166,7 @@ public class AdminMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void updateOrderStatus() {
@@ -196,10 +204,16 @@ public class AdminMenu {
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private boolean isActiveOrder(Order order) {
         return order.getStatus() != OrderStatus.DELIVERED &&
                 order.getStatus() != OrderStatus.CANCELLED;
+    }
+
+    private void waitForKeyPress() {
+        System.out.println("Press any key to continue...");
+        scanner.nextLine();
     }
 }

@@ -44,7 +44,7 @@ public class MainMenu {
                     break;
                 case "exit":
                     System.out.println("Thank you for using our system!");
-                    return;
+                    System.exit(0);
                 default:
                     System.out.println("Invalid role. Please try again.");
             }
