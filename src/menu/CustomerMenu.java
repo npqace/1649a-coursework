@@ -36,6 +36,7 @@ public class CustomerMenu {
             switch (choice) {
                 case "1":
                     bookService.displayBooks(SortBy.ID);
+                    waitForKeyPress();
                     break;
                 case "2":
                     searchBooks();
@@ -77,6 +78,7 @@ public class CustomerMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void sortBooks() {
@@ -96,6 +98,7 @@ public class CustomerMenu {
             default:
                 System.out.println("Invalid sort option");
         }
+        waitForKeyPress();
     }
 
     private void placeOrder() {
@@ -136,6 +139,7 @@ public class CustomerMenu {
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void trackOrder() {
@@ -154,5 +158,11 @@ public class CustomerMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
+    }
+
+    private void waitForKeyPress() {
+        System.out.println("Press any key to continue...");
+        scanner.nextLine();
     }
 }

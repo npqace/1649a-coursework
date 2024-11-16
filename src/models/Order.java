@@ -80,29 +80,53 @@ public class Order {
 
     @Override
     public String toString() {
-        StringBuilder bookListBuilder = new StringBuilder();
+        // Get the book entries
         InventoryItem<Book>[] entries = books.getEntries();
 
+        // Create the book list with each book on a new line
+        StringBuilder bookListBuilder = new StringBuilder();
         for (int i = 0; i < entries.length; i++) {
             InventoryItem<Book> entry = entries[i];
             if (i > 0) {
-                bookListBuilder.append(", ");
+                bookListBuilder.append("\n                                              "); // Padding to align with
+                                                                                            // column
             }
             bookListBuilder.append(String.format("%s: %d", entry.getBook().getTitle(), entry.getQuantity()));
         }
 
-        String bookList = bookListBuilder.toString();
         String customerNameTruncated = getTruncatedString(customerName, 20);
         String shippingAddressTruncated = getTruncatedString(shippingAddress, 20);
-        String bookListTruncated = getTruncatedString(bookList, 30);
 
-        return String.format("| %-7d | %-20s | %-20s | %-12s | %-30s | $%-9.2f |",
+        // Build first book display string
+        String firstBookDisplay = "";
+        if (entries.length > 0) {
+            String bookInfo = entries[0].getBook().getTitle() + ": " + entries[0].getQuantity();
+            firstBookDisplay = getTruncatedString(bookInfo, 30);
+        }
+
+        // Create the main row
+        String mainRow = String.format("| %-7d | %-20s | %-20s | %-12s | %-30s | $%-9.2f |",
                 orderID,
                 customerNameTruncated,
                 shippingAddressTruncated,
                 status,
-                bookListTruncated,
+                firstBookDisplay,
                 totalPrice);
+
+        // If there are additional books, add them as continuation rows
+        if (entries.length > 1) {
+            StringBuilder fullOutput = new StringBuilder(mainRow);
+            for (int i = 1; i < entries.length; i++) {
+                InventoryItem<Book> entry = entries[i];
+                String bookInfo = getTruncatedString(entry.getBook().getTitle() + ": " + entry.getQuantity(), 30);
+                fullOutput.append("\n").append(String.format(
+                        "|         |                      |                      |              | %-30s |            |",
+                        bookInfo));
+            }
+            return fullOutput.toString();
+        }
+
+        return mainRow;
     }
 
     private String getTruncatedString(String input, int maxLength) {
@@ -116,6 +140,6 @@ public class Order {
     public static String getTableHeader() {
         return String.format("| %-7s | %-20s | %-20s | %-12s | %-30s | %-10s |%n%s",
                 "ID", "Customer", "Address", "Status", "Books", "Total",
-                "-".repeat(110));
+                "-".repeat(118));
     }
 }

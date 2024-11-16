@@ -159,6 +159,7 @@ public class AdminMenu {
         } catch (Exception e) {
             System.out.println("Failed to add book: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void updateBookDetails() {
@@ -189,6 +190,7 @@ public class AdminMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void updateBookStock() {
@@ -208,6 +210,7 @@ public class AdminMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void removeBook() {
@@ -225,6 +228,7 @@ public class AdminMenu {
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private void updateOrderStatus() {
@@ -262,6 +266,7 @@ public class AdminMenu {
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         }
+        waitForKeyPress();
     }
 
     private boolean isActiveOrder(Order order) {

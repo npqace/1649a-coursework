@@ -90,7 +90,7 @@ public class Book {
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("| ")
-                .append(String.format("%-4d", bookID))
+                .append(String.format("%-4s", bookID))
                 .append(" | ")
                 .append(getTruncatedString(title, 30))
                 .append(" | ")
@@ -113,8 +113,8 @@ public class Book {
     }
 
     public static String getTableHeader() {
-        return String.format("| %-7s | %-30s | %-20s | %-9s | %-8s |%n%s",
+        return String.format("| %-4s | %-30s | %-20s | %-9s | %-12s |%n%s",
                 "ID", "Title", "Author", "Price", "Stock",
-                "-".repeat(87));
+                "-".repeat(91));
     }
 }
