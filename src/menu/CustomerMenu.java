@@ -51,7 +51,9 @@ public class CustomerMenu {
                     trackOrder();
                     break;
                 case "6":
-                    mainMenu.start();
+                if (!mainMenu.getNavigationStack().isEmpty()) {
+                    mainMenu.getNavigationStack().pop().run(); // Pop and return to main menu
+                }
                     return;
                 default:
                     System.out.println("Invalid choice");
