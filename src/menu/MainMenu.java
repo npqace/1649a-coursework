@@ -23,7 +23,6 @@ public class MainMenu {
     }
 
     public void start() {
-        navigationStack.push(this::showMainMenu);
         showMainMenu();
     }
 
@@ -35,19 +34,26 @@ public class MainMenu {
 
             switch (role) {
                 case "admin":
-                    navigationStack.push(this::showMainMenu);
+                    navigationStack.push(() -> showMainMenu());
                     adminMenu.show();
                     break;
                 case "customer":
-                    navigationStack.push(this::showMainMenu);
+                    navigationStack.push(() -> showMainMenu());
                     customerMenu.show();
                     break;
                 case "exit":
+                while (!navigationStack.isEmpty()) {
+                    navigationStack.pop(); // Clear stack by popping all items
+                }
                     System.out.println("Thank you for using our system!");
                     System.exit(0);
                 default:
                     System.out.println("Invalid role. Please try again.");
             }
         }
+    }
+
+    public NavigationStack<Runnable> getNavigationStack() {
+        return navigationStack;
     }
 }

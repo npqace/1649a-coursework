@@ -25,56 +25,118 @@ public class AdminMenu {
     public void show() {
         while (true) {
             System.out.println("\n=== Admin Menu ===");
+            System.out.println("1. Book Management");
+            System.out.println("2. Order Management");
+            System.out.println("3. Back to Main Menu");
+            System.out.print("Enter your choice: ");
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine());
+                switch (choice) {
+                    case 1:
+                        mainMenu.getNavigationStack().push(() -> show());
+                        showBookManagementMenu();
+                        break;
+                    case 2:
+                        mainMenu.getNavigationStack().push(() -> show());
+                        showOrderManagementMenu();
+                        break;
+                    case 3:
+                        if (!mainMenu.getNavigationStack().isEmpty()) {
+                            mainMenu.getNavigationStack().pop().run(); // Pop and return to main menu
+                        }
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
+        }
+    }
+
+    private void showBookManagementMenu() {
+        while (true) {
+            System.out.println("\n=== Book Management Menu ===");
             System.out.println("1. View all books");
             System.out.println("2. Add new book");
             System.out.println("3. Update book details");
             System.out.println("4. Update book stock");
             System.out.println("5. Remove book");
-            System.out.println("6. View all orders");
-            System.out.println("7. Process pending orders");
-            System.out.println("8. View active orders");
-            System.out.println("9. Update order status");
-            System.out.println("10. Back");
-            System.out.print("Enter choice: ");
+            System.out.println("6. Back to Admin Menu");
+            System.out.print("Enter your choice: ");
 
-            String choice = scanner.nextLine();
-            switch (choice) {
-                case "1":
-                    bookService.displayBooks(SortBy.ID);
-                    waitForKeyPress();
-                    break;
-                case "2":
-                    addNewBook();
-                    break;
-                case "3":
-                    updateBookDetails();
-                    break;
-                case "4":
-                    updateBookStock();
-                    break;
-                case "5":
-                    removeBook();
-                    break;
-                case "6":
-                    orderService.displayAllOrders();
-                    waitForKeyPress();
-                    break;
-                case "7":
-                    orderService.processNextPendingOrder();
-                    waitForKeyPress();
-                    break;
-                case "8":
-                    orderService.displayActiveOrders();
-                    waitForKeyPress();
-                    break;
-                case "9":
-                    updateOrderStatus();
-                    break;
-                case "10":
-                    mainMenu.start();
-                    return;
-                default:
-                    System.out.println("Invalid choice");
+            try {
+                int choice = Integer.parseInt(scanner.nextLine());
+                switch (choice) {
+                    case 1:
+                        bookService.displayBooks(SortBy.ID);
+                        waitForKeyPress();
+                        break;
+                    case 2:
+                        addNewBook();
+                        break;
+                    case 3:
+                        updateBookDetails();
+                        break;
+                    case 4:
+                        updateBookStock();
+                        break;
+                    case 5:
+                        removeBook();
+                        break;
+                    case 6:
+                        if (!mainMenu.getNavigationStack().isEmpty()) {
+                            mainMenu.getNavigationStack().pop().run(); // Pop and return to admin menu
+                        }
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
+            }
+        }
+    }
+
+    private void showOrderManagementMenu() {
+        while (true) {
+            System.out.println("\n=== Order Management Menu ===");
+            System.out.println("1. View all orders");
+            System.out.println("2. View active orders");
+            System.out.println("3. Process pending orders");
+            System.out.println("4. Update order status");
+            System.out.println("5. Back to Admin Menu");
+            System.out.print("Enter your choice: ");
+
+            try {
+                int choice = Integer.parseInt(scanner.nextLine());
+                switch (choice) {
+                    case 1:
+                        orderService.displayAllOrders();
+                        waitForKeyPress();
+                        break;
+                    case 2:
+                        orderService.displayActiveOrders();
+                        waitForKeyPress();
+                        break;
+                    case 3:
+                        orderService.processNextPendingOrder();
+                        waitForKeyPress();
+                        break;
+                    case 4:
+                        updateOrderStatus();
+                        break;
+                    case 5:
+                        if (!mainMenu.getNavigationStack().isEmpty()) {
+                            mainMenu.getNavigationStack().pop().run(); // Pop and return to admin menu
+                        }
+                        return;
+                    default:
+                        System.out.println("Invalid choice. Please try again.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a number.");
             }
         }
     }
