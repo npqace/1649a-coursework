@@ -6,10 +6,19 @@ import models.Book;
 import models.Order;
 import models.enums.OrderStatus;
 
+/**
+ * Service class for managing orders in the system.
+ * Handles creating, updating, and processing orders.
+ */
 public class OrderService {
-    private OrderQueue<Order> orderQueue;
-    private BookService bookService;
+    private OrderQueue<Order> orderQueue; // Queue to manage orders in FIFO order
+    private BookService bookService; // Service to handle book-related operations
 
+    /**
+     * Constructor to initialize the OrderService with a BookService instance.
+     * 
+     * @param bookService The service for book management.
+     */
     public OrderService(BookService bookService) {
         if (bookService == null) {
             throw new IllegalArgumentException("Book service cannot be null");
@@ -18,6 +27,13 @@ public class OrderService {
         this.bookService = bookService;
     }
 
+    /**
+     * Creates a new order with the provided customer details.
+     * 
+     * @param customerName    The customer's name.
+     * @param shippingAddress The shipping address.
+     * @return A new Order instance.
+     */
     public Order createOrder(String customerName, String shippingAddress) {
         if (customerName == null || customerName.trim().isEmpty()) {
             throw new IllegalArgumentException("Customer name cannot be empty");
@@ -28,6 +44,14 @@ public class OrderService {
         return new Order(customerName.trim(), shippingAddress.trim());
     }
 
+    /**
+     * Adds a book to an order if available in stock.
+     * 
+     * @param order    The order to which the book will be added.
+     * @param bookId   The ID of the book.
+     * @param quantity The quantity of the book to add.
+     * @return True if the book was successfully added, false otherwise.
+     */
     public boolean addBookToOrder(Order order, int bookId, int quantity) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
@@ -51,6 +75,12 @@ public class OrderService {
         return false;
     }
 
+    /**
+     * Finds an order in the queue by its ID.
+     * 
+     * @param orderId The ID of the order to find.
+     * @return The found order, or null if not found.
+     */
     public Order findOrderById(int orderId) {
         if (orderId <= 0) {
             throw new IllegalArgumentException("Order ID must be positive");
@@ -60,6 +90,7 @@ public class OrderService {
         Order foundOrder = null;
 
         try {
+            // Search through the queue while preserving its order
             while (!orderQueue.isEmpty()) {
                 Order order = orderQueue.poll();
                 if (order.getOrderId() == orderId) {
@@ -68,7 +99,7 @@ public class OrderService {
                 tempQueue.offer(order);
             }
 
-            // Restore queue
+            // Restore the queue after the search
             while (!tempQueue.isEmpty()) {
                 orderQueue.offer(tempQueue.poll());
             }
@@ -78,6 +109,9 @@ public class OrderService {
         return foundOrder;
     }
 
+    /**
+     * Displays all orders currently in the queue.
+     */
     public void displayAllOrders() {
         if (orderQueue.isEmpty()) {
             System.out.println("No orders found");
@@ -85,17 +119,17 @@ public class OrderService {
         }
 
         OrderQueue<Order> tempQueue = new OrderQueue<>();
-        System.out.println(Order.getTableHeader());
+        System.out.println(Order.getTableHeader()); // Print table header
 
         try {
-            // Display and preserve FIFO order
+            // Print and temporarily remove orders from the queue
             while (!orderQueue.isEmpty()) {
                 Order order = orderQueue.poll();
                 System.out.println(order);
                 tempQueue.offer(order);
             }
 
-            // Restore queue
+            // Restore the queue
             while (!tempQueue.isEmpty()) {
                 orderQueue.offer(tempQueue.poll());
             }
@@ -104,6 +138,10 @@ public class OrderService {
         }
     }
 
+    /**
+     * Displays only active orders from the queue.
+     * Active orders exclude those with statuses DELIVERED or CANCELLED.
+     */
     public void displayActiveOrders() {
         if (orderQueue.isEmpty()) {
             System.out.println("No active orders");
@@ -122,7 +160,7 @@ public class OrderService {
                 tempQueue.offer(order);
             }
 
-            // Restore queue
+            // Restore the queue
             while (!tempQueue.isEmpty()) {
                 orderQueue.offer(tempQueue.poll());
             }
@@ -131,12 +169,22 @@ public class OrderService {
         }
     }
 
+    /**
+     * Checks if an order is active based on its status.
+     * 
+     * @param order The order to check.
+     * @return True if the order is active, false otherwise.
+     */
     private boolean isActiveOrder(Order order) {
         return order.getStatus() != OrderStatus.DELIVERED &&
                 order.getStatus() != OrderStatus.CANCELLED;
     }
 
-    // Update submitOrder with enhanced validation
+    /**
+     * Submits an order to the queue after validation.
+     * 
+     * @param order The order to submit.
+     */
     public void submitOrder(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
@@ -157,6 +205,11 @@ public class OrderService {
         }
     }
 
+    /**
+     * Processes the next pending order in the queue.
+     * If the order is valid and all items are in stock, it is confirmed.
+     * Otherwise, the order is canceled.
+     */
     public void processNextPendingOrder() {
         if (orderQueue.isEmpty()) {
             System.out.println("No orders in queue");
@@ -167,7 +220,7 @@ public class OrderService {
         Order pendingOrder = null;
 
         try {
-            // Find next pending order
+            // Find the next order with PENDING status
             while (!orderQueue.isEmpty() && pendingOrder == null) {
                 Order order = orderQueue.poll();
                 if (order.getStatus() == OrderStatus.PENDING) {
@@ -176,12 +229,12 @@ public class OrderService {
                 tempQueue.offer(order);
             }
 
-            // Process remaining orders
+            // Process the remaining orders in the queue
             while (!orderQueue.isEmpty()) {
                 tempQueue.offer(orderQueue.poll());
             }
 
-            // If found pending order, process it
+            // Process the pending order if found
             if (pendingOrder != null) {
                 System.out.println("\nProcessing Order #" + pendingOrder.getOrderId());
                 System.out.println("Order Details:");
@@ -190,6 +243,7 @@ public class OrderService {
                 boolean allInStock = true;
                 String outOfStockBookTitle = "";
 
+                // Check if all items in the order are in stock
                 InventoryItem<Book>[] items = pendingOrder.getBooks().getEntries();
                 for (int i = 0; i < items.length; i++) {
                     InventoryItem<Book> item = items[i];
@@ -202,6 +256,7 @@ public class OrderService {
                     }
                 }
 
+                // If all items are in stock, confirm the order and update inventory
                 if (allInStock) {
                     try {
                         updateInventoryStock(pendingOrder);
@@ -212,6 +267,7 @@ public class OrderService {
                         System.out.println("Order is canceled. " + e.getMessage());
                     }
                 } else {
+                    // Cancel the order if any item is out of stock
                     pendingOrder.setStatus(OrderStatus.CANCELLED);
                     System.out.println(
                             "Order #" + pendingOrder.getOrderId() + " has been canceled. " + outOfStockBookTitle
@@ -221,7 +277,7 @@ public class OrderService {
                 System.out.println("No pending orders found");
             }
 
-            // Restore queue
+            // Restore the queue after processing
             while (!tempQueue.isEmpty()) {
                 orderQueue.offer(tempQueue.poll());
             }
@@ -230,6 +286,12 @@ public class OrderService {
         }
     }
 
+    /**
+     * Updates the inventory stock based on the items in the processed order.
+     * 
+     * @param order The order being processed.
+     * @throws IllegalStateException If any item's stock is insufficient.
+     */
     private void updateInventoryStock(Order order) {
         InventoryItem<Book>[] orderItems = order.getBooks().getEntries();
 
@@ -244,10 +306,17 @@ public class OrderService {
                 throw new IllegalStateException("Insufficient stock for book: " + book.getTitle());
             }
 
+            // Update the stock for the book
             bookService.updateStock(book.getBookID(), currentStock - orderedQuantity);
         }
     }
 
+    /**
+     * Updates the status of an order if the transition is valid.
+     * 
+     * @param order     The order whose status needs to be updated.
+     * @param newStatus The new status to set.
+     */
     public void updateOrderStatus(Order order, OrderStatus newStatus) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
@@ -265,6 +334,13 @@ public class OrderService {
         }
     }
 
+    /**
+     * Validates whether the status transition for an order is allowed.
+     * 
+     * @param current The current status of the order.
+     * @param next    The desired new status.
+     * @return True if the transition is valid, false otherwise.
+     */
     private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {
         switch (current) {
             case PENDING:
@@ -278,11 +354,16 @@ public class OrderService {
         }
     }
 
+    /**
+     * Displays the details of a specific order.
+     * 
+     * @param order The order to display.
+     */
     public void displayOrder(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
         }
-        System.out.println(Order.getTableHeader());
-        System.out.println(order.toString());
+        System.out.println(Order.getTableHeader()); // Print the table header
+        System.out.println(order.toString()); // Print the order details
     }
 }

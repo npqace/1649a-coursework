@@ -12,6 +12,14 @@ public class MainMenu {
     private final Scanner scanner;
     private final NavigationStack<Runnable> navigationStack;
 
+    /**
+     * Constructor that initializes member variables.
+     *
+     * @param bookService  An instance of the `BookService` class.
+     * @param orderService An instance of the `OrderService` class.
+     * @throws IllegalArgumentException If either `bookService` or `orderService` is
+     *                                  null.
+     */
     public MainMenu(BookService bookService, OrderService orderService) {
         if (bookService == null || orderService == null) {
             throw new IllegalArgumentException("BookService and OrderService cannot be null");
@@ -22,10 +30,16 @@ public class MainMenu {
         this.navigationStack = new NavigationStack<>();
     }
 
+    /**
+     * Starts the main menu loop.
+     */
     public void start() {
         showMainMenu();
     }
 
+    /**
+     * Displays the main menu and handles user interaction.
+     */
     public void showMainMenu() {
         while (true) {
             System.out.println("\n===== Bookstore Management System =====");
@@ -34,17 +48,22 @@ public class MainMenu {
 
             switch (role) {
                 case "admin":
+                    // Push the current menu display function onto the stack
+                    // for back navigation from admin menu.
                     navigationStack.push(() -> showMainMenu());
                     adminMenu.show();
                     break;
                 case "customer":
+                    // Push the current menu display function onto the stack
+                    // for back navigation from customer menu.
                     navigationStack.push(() -> showMainMenu());
                     customerMenu.show();
                     break;
                 case "exit":
-                while (!navigationStack.isEmpty()) {
-                    navigationStack.pop(); // Clear stack by popping all items
-                }
+                    // Clear the navigation stack to remove any remaining entries.
+                    while (!navigationStack.isEmpty()) {
+                        navigationStack.pop(); // Clear stack by popping all items
+                    }
                     System.out.println("Thank you for using our system!");
                     System.exit(0);
                 default:
@@ -53,6 +72,11 @@ public class MainMenu {
         }
     }
 
+    /**
+     * Provides access to the navigation stack.
+     *
+     * @return The `NavigationStack` instance used for navigation tracking.
+     */
     public NavigationStack<Runnable> getNavigationStack() {
         return navigationStack;
     }

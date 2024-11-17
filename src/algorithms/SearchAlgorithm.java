@@ -3,7 +3,15 @@ package algorithms;
 import models.Book;
 
 public class SearchAlgorithm {
-    // Binary search algorithm for book by ID (requires sorted array)
+    /**
+     * Performs a binary search on a sorted array of books to find the index of a
+     * book with a specific ID.
+     * 
+     * @param books The sorted array of Book objects.
+     * @param id    The ID of the book to search for.
+     * @return The index of the book in the array if found, -1 otherwise.
+     * @throws IllegalArgumentException if the books array is null.
+     */
     public static int binarySearchById(Book[] books, int id) {
         if (books == null) {
             throw new IllegalArgumentException("Books array cannot be null");
@@ -31,7 +39,16 @@ public class SearchAlgorithm {
         return -1;
     }
 
-    // Linear search algorithm for book by title
+    /**
+     * Performs a linear search on an array of books to find all books with a title
+     * containing a specific keyword.
+     * 
+     * @param books The array of Book objects.
+     * @param title The keyword to search for in book titles (case-insensitive).
+     * @return An array containing all matching books, or an empty array if no
+     *         matches are found.
+     * @throws IllegalArgumentException if the books array or title is null.
+     */
     public static Book[] searchByTitle(Book[] books, String title) {
         if (books == null) {
             throw new IllegalArgumentException("Books array cannot be null");
