@@ -5,6 +5,17 @@ import data_structures.InventoryList;
 import interfaces.IInventoryList;
 import models.enums.OrderStatus;
 
+/**
+ * Represents an order placed by a customer.
+ * 
+ * An order consists of:
+ * - A unique order ID.
+ * - Customer name and shipping address.
+ * - A list of books and their quantities.
+ * - Total price of the order.
+ * - Order status (PENDING, SHIPPING, DELIVERED, CANCELLED).
+ */
+
 public class Order {
     private static int counter = 1;
     private int orderID;
@@ -14,6 +25,13 @@ public class Order {
     private double totalPrice;
     private OrderStatus status;
 
+    /**
+     * Creates a new order.
+     *
+     * @param customerName    The customer's name.
+     * @param shippingAddress The customer's shipping address.
+     * @throws IllegalArgumentException If the name or address is empty.
+     */
     public Order(String customerName, String shippingAddress) {
         if (customerName == null || customerName.trim().isEmpty()) {
             throw new IllegalArgumentException("Customer name cannot be empty");
@@ -58,6 +76,14 @@ public class Order {
         this.status = status;
     }
 
+    /**
+     * Adds a book to the order.
+     *
+     * @param book     The book to add.
+     * @param quantity The quantity of the book.
+     * @throws IllegalArgumentException If the book is null or the quantity is
+     *                                  negative.
+     */
     public void addBook(Book book, int quantity) {
         if (book == null) {
             throw new IllegalArgumentException("Book cannot be null");
@@ -69,6 +95,10 @@ public class Order {
         calculateTotalPrice();
     }
 
+    /**
+     * Calculates the total price of the order based on the books and their
+     * quantities.
+     */
     private void calculateTotalPrice() {
         totalPrice = 0.0;
         InventoryItem<Book>[] entries = books.getEntries();
@@ -78,12 +108,18 @@ public class Order {
         }
     }
 
+    /**
+     * Returns a string representation of the order, including its details and the
+     * books within it.
+     *
+     * @return A string representation of the order.
+     */
     @Override
     public String toString() {
-        // Get the book entries
+        // Get the list of books and their quantities from the order's inventory
         InventoryItem<Book>[] entries = books.getEntries();
 
-        // Create the book list with each book on a new line
+        // Build a string representation of the books, with each book on a new line
         StringBuilder bookListBuilder = new StringBuilder();
         for (int i = 0; i < entries.length; i++) {
             InventoryItem<Book> entry = entries[i];
@@ -94,10 +130,11 @@ public class Order {
             bookListBuilder.append(String.format("%s: %d", entry.getBook().getTitle(), entry.getQuantity()));
         }
 
+        // Truncate customer name and shipping address for better formatting
         String customerNameTruncated = getTruncatedString(customerName, 20);
         String shippingAddressTruncated = getTruncatedString(shippingAddress, 20);
 
-        // Build first book display string
+        // Format the first line of the order display, including the first book
         String firstBookDisplay = "";
         if (entries.length > 0) {
             String bookInfo = entries[0].getBook().getTitle() + ": " + entries[0].getQuantity();
@@ -129,6 +166,15 @@ public class Order {
         return mainRow;
     }
 
+    /**
+     * Truncates a given string to a specified maximum length, adding an ellipsis if
+     * necessary.
+     * 
+     * @param input     The string to be truncated.
+     * @param maxLength The maximum allowed length of the string.
+     * @return The truncated string, or the original string if it's shorter than the
+     *         maximum length.
+     */
     private String getTruncatedString(String input, int maxLength) {
         if (input.length() > maxLength) {
             return input.substring(0, maxLength - 3) + "...";
@@ -137,6 +183,19 @@ public class Order {
         }
     }
 
+    /**
+     * Generates the header for a table displaying order information.
+     * 
+     * The header includes columns for:
+     * - Order ID
+     * - Customer Name
+     * - Shipping Address
+     * - Order Status
+     * - Books (truncated to 30 characters)
+     * - Total Price
+     * 
+     * @return A formatted string representing the table header.
+     */
     public static String getTableHeader() {
         return String.format("| %-7s | %-20s | %-20s | %-12s | %-30s | %-10s |%n%s",
                 "ID", "Customer", "Address", "Status", "Books", "Total",
