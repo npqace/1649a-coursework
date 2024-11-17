@@ -90,7 +90,7 @@ public class Book {
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("| ")
-                .append(String.format("%-4d", bookID))
+                .append(String.format("%-4s", bookID))
                 .append(" | ")
                 .append(getTruncatedString(title, 30))
                 .append(" | ")
