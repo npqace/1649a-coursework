@@ -61,7 +61,7 @@ public class InventoryList<E> implements IInventoryList<E> {
     public boolean isEmpty() {
         return this.size == 0;
     }
-
+//
     @Override
     public void remove(E book) {
         if (book == null) {

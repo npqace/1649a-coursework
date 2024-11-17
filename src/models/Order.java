@@ -116,6 +116,6 @@ public class Order {
     public static String getTableHeader() {
         return String.format("| %-7s | %-20s | %-20s | %-12s | %-30s | %-10s |%n%s",
                 "ID", "Customer", "Address", "Status", "Books", "Total",
-                "-".repeat(110));
+                "-".repeat(118));
     }
 }

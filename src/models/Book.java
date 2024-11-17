@@ -113,8 +113,8 @@ public class Book {
     }
 
     public static String getTableHeader() {
-        return String.format("| %-7s | %-30s | %-20s | %-9s | %-8s |%n%s",
+        return String.format("| %-4s | %-30s | %-20s | %-9s | %-12s |%n%s",
                 "ID", "Title", "Author", "Price", "Stock",
-                "-".repeat(87));
+                "-".repeat(91));
     }
 }
