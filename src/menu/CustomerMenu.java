@@ -8,6 +8,13 @@ import models.Order;
 
 import java.util.Scanner;
 
+/**
+ * Represents the customer menu of a book store application.
+ * This class provides functionalities for customers to browse books, search for
+ * specific titles,
+ * sort books by different criteria, place orders, track existing orders, and
+ * navigate back to the main menu.
+ */
 public class CustomerMenu {
     private final BookService bookService;
     private final OrderService orderService;
@@ -21,6 +28,11 @@ public class CustomerMenu {
         this.mainMenu = mainMenu;
     }
 
+    /**
+     * Displays the customer menu and handles user interactions.
+     * This method loops continuously until the user chooses to go back to the main
+     * menu.
+     */
     public void show() {
         while (true) {
             System.out.println("\n=== Customer Menu ===");
@@ -35,6 +47,7 @@ public class CustomerMenu {
             String choice = scanner.nextLine();
             switch (choice) {
                 case "1":
+                    // View all books sorted by ID
                     bookService.displayBooks(SortBy.ID);
                     waitForKeyPress();
                     break;
@@ -51,9 +64,11 @@ public class CustomerMenu {
                     trackOrder();
                     break;
                 case "6":
-                if (!mainMenu.getNavigationStack().isEmpty()) {
-                    mainMenu.getNavigationStack().pop().run(); // Pop and return to main menu
-                }
+                    if (!mainMenu.getNavigationStack().isEmpty()) {
+                        // Pop the top element from the navigation stack and call its run method (back
+                        // to main menu)
+                        mainMenu.getNavigationStack().pop().run();
+                    }
                     return;
                 default:
                     System.out.println("Invalid choice");
@@ -61,6 +76,13 @@ public class CustomerMenu {
         }
     }
 
+    /**
+     * Searches for books based on the provided search term.
+     *
+     * Prompts the user to enter a search term, then uses the `BookService` to find
+     * matching books.
+     * Displays the search results in a tabular format.
+     */
     private void searchBooks() {
         System.out.print("Enter search term: ");
         String term = scanner.nextLine();
@@ -81,6 +103,12 @@ public class CustomerMenu {
         waitForKeyPress();
     }
 
+    /**
+     * Sorts and displays books based on the user's choice.
+     *
+     * Prompts the user to choose a sorting criteria (title or price) and displays
+     * the sorted list of books.
+     */
     private void sortBooks() {
         System.out.println("\nSort by:");
         System.out.println("1. Title");
@@ -101,14 +129,23 @@ public class CustomerMenu {
         waitForKeyPress();
     }
 
+    /**
+     * Guides the user through the process of placing a new order.
+     *
+     * Similar to sorting books, this method allows the user to iteratively add
+     * items to an order until finished.
+     */
     private void placeOrder() {
         try {
+            // Prompt user for name and address
             System.out.print("Enter your name: ");
             String name = scanner.nextLine();
             System.out.print("Enter your address: ");
             String address = scanner.nextLine();
 
+            // Create a new order
             Order order = orderService.createOrder(name, address);
+            // Display available books and allow user to add books to the order
             bookService.displayBooks(SortBy.ID);
 
             while (true) {
@@ -127,6 +164,7 @@ public class CustomerMenu {
                 }
             }
 
+            // Submit the order if there are books in it
             if (!order.getBooks().isEmpty()) {
                 orderService.submitOrder(order);
                 System.out.println("Order submitted successfully!");
@@ -142,6 +180,14 @@ public class CustomerMenu {
         waitForKeyPress();
     }
 
+    /**
+     * Allows the user to track an order by its ID.
+     * 
+     * This method prompts the user to enter an order ID, retrieves the order
+     * details using the `OrderService`,
+     * and displays the order information or an error message if the order is not
+     * found.
+     */
     private void trackOrder() {
         System.out.print("Enter order ID: ");
         try {
@@ -161,6 +207,12 @@ public class CustomerMenu {
         waitForKeyPress();
     }
 
+    /**
+     * Pauses the program execution until the user presses any key.
+     * 
+     * This method is used to keep the console window open after displaying
+     * information.
+     */
     private void waitForKeyPress() {
         System.out.println("Press any key to continue...");
         scanner.nextLine();
