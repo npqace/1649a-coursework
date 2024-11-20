@@ -4,14 +4,10 @@ import interfaces.IOrderQueue;
 import models.Order;
 
 public class OrderQueue<E> implements IOrderQueue<E> {
-    // Inner class to represent a node in the linked list used for the queue
-    /**
-     * Node class represents a single element in the linked list used by the
-     * OrderQueue.
-     */
+    // Node class for queue implementation
     private class Node<E> {
-        private E element; // The data stored in this node
-        private Node<E> next; // Reference to the next node in the list
+        private E element;
+        private Node<E> next;
 
         private Node(E element) {
             this.element = element;
@@ -19,20 +15,15 @@ public class OrderQueue<E> implements IOrderQueue<E> {
         }
     }
 
-    private Node<E> head; // Front element of the queue (points to the first node)
-    private int size; // Number of elements in the queue
+    private Node<E> head; // Front of queue
+    private int size;     // Queue size
 
     public OrderQueue() {
         this.head = null;
         this.size = 0;
     }
 
-    /**
-     * Adds an element to the back of the queue.
-     *
-     * @param element The element to be added.
-     * @throws IllegalArgumentException if the element is null.
-     */
+    // Add element to back of queue
     @Override
     public void offer(E element) {
         if (element == null) {
@@ -49,7 +40,7 @@ public class OrderQueue<E> implements IOrderQueue<E> {
                     current = current.next;
                 }
                 current.next = newNode;
-                // Set the next pointer for the Order
+                // Update Order's next pointer
                 if (element instanceof Order) {
                     ((Order) current.element).next = (Order) element;
                 }
@@ -60,12 +51,7 @@ public class OrderQueue<E> implements IOrderQueue<E> {
         }
     }
 
-    /**
-     * Removes and returns the element from the front of the queue.
-     *
-     * @return The element removed from the queue.
-     * @throws IllegalStateException if the queue is empty.
-     */
+    // Remove and return front element
     @Override
     public E poll() {
         if (isEmpty()) {
@@ -80,7 +66,7 @@ public class OrderQueue<E> implements IOrderQueue<E> {
                 Node<E> next = head.next;
                 head.next = null;
                 if (oldElement instanceof Order) {
-                    ((Order) oldElement).next = null; // Clear next pointer
+                    ((Order) oldElement).next = null;
                 }
                 head = next;
             }
@@ -92,13 +78,7 @@ public class OrderQueue<E> implements IOrderQueue<E> {
         }
     }
 
-    /**
-     * Returns the element from the front of the queue without removing it.
-     *
-     * @return The element at the front of the queue.
-     * @throws IllegalStateException if the queue is empty.  
-     * 
-     */
+    // Return front element without removing
     @Override
     public E peek() {
         if (isEmpty()) {
@@ -113,21 +93,13 @@ public class OrderQueue<E> implements IOrderQueue<E> {
         }
     }
 
-    /**
-     * Returns the number of elements in the queue.
-     *
-     * @return The size of the queue.
-     */
+    // Return queue size
     @Override
     public int size() {
         return this.size;
     }
 
-    /**
-     * Checks if the queue is empty.
-     *
-     * @return `true` if the queue is empty, `false` otherwise.
-     */
+    // Check if queue is empty
     @Override
     public boolean isEmpty() {
         return this.size == 0;

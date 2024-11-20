@@ -3,15 +3,8 @@ package algorithms;
 import models.Book;
 
 public class SearchAlgorithm {
-    /**
-     * Performs a binary search on a sorted array of books to find the index of a
-     * book with a specific ID.
-     * 
-     * @param books The sorted array of Book objects.
-     * @param id    The ID of the book to search for.
-     * @return The index of the book in the array if found, -1 otherwise.
-     * @throws IllegalArgumentException if the books array is null.
-     */
+
+    // Binary search to find the index of a book by its ID
     public static int binarySearchById(Book[] books, int id) {
         if (books == null) {
             throw new IllegalArgumentException("Books array cannot be null");
@@ -24,31 +17,22 @@ public class SearchAlgorithm {
                 int mid = left + (right - left) / 2;
 
                 if (books[mid].getBookID() == id) {
-                    return mid;
+                    return mid; // Book found
                 }
 
                 if (books[mid].getBookID() < id) {
-                    left = mid + 1;
+                    left = mid + 1; // Search right half
                 } else {
-                    right = mid - 1;
+                    right = mid - 1; // Search left half
                 }
             }
         } catch (Exception e) {
             System.out.println("Error: " + e);
         }
-        return -1;
+        return -1; // Book not found
     }
 
-    /**
-     * Performs a linear search on an array of books to find all books with a title
-     * containing a specific keyword.
-     * 
-     * @param books The array of Book objects.
-     * @param title The keyword to search for in book titles (case-insensitive).
-     * @return An array containing all matching books, or an empty array if no
-     *         matches are found.
-     * @throws IllegalArgumentException if the books array or title is null.
-     */
+    // Linear search to find books by title keyword
     public static Book[] searchByTitle(Book[] books, String title) {
         if (books == null) {
             throw new IllegalArgumentException("Books array cannot be null");
@@ -64,7 +48,7 @@ public class SearchAlgorithm {
             for (int i = 0; i < books.length; i++) {
                 Book book = books[i];
                 if (book.getTitle().toLowerCase().contains(title)) {
-                    result[count++] = book;
+                    result[count++] = book; // Add matching book to result
                 }
             }
         } catch (Exception e) {
