@@ -43,23 +43,27 @@ public class MainMenu {
     public void showMainMenu() {
         while (true) {
             System.out.println("\n===== Bookstore Management System =====");
-            System.out.print("Please choose your role (admin/customer/exit): ");
-            String role = scanner.nextLine().toLowerCase().trim();
-
-            switch (role) {
-                case "admin":
+            System.out.println("Please choose your role: ");
+            System.out.println("1. Admin");
+            System.out.println("2. Customer");
+            System.out.println("3. Exit");
+            System.out.print("Enter role: ");
+            
+            int choice = Integer.parseInt(scanner.nextLine());
+            switch (choice) {
+                case 1:
                     // Push the current menu display function onto the stack
                     // for back navigation from admin menu.
                     navigationStack.push(() -> showMainMenu());
                     adminMenu.show();
                     break;
-                case "customer":
+                case 2:
                     // Push the current menu display function onto the stack
                     // for back navigation from customer menu.
                     navigationStack.push(() -> showMainMenu());
                     customerMenu.show();
                     break;
-                case "exit":
+                case 3:
                     // Clear the navigation stack to remove any remaining entries.
                     while (!navigationStack.isEmpty()) {
                         navigationStack.pop(); // Clear stack by popping all items

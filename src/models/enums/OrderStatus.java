@@ -1,7 +1,7 @@
 package models.enums;
 
 public enum OrderStatus {
-    PENDING, // initiat when create an order
+    PENDING, // when the order is first placed
     CONFIRMED, // when the order is confirmed (book is available)
     SHIPPING, // when the order is being shipped
     DELIVERED, // when the order is delivered / completed
