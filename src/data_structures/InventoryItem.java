@@ -1,30 +1,13 @@
 package data_structures;
 
-/**
- * This class represents an item in an inventory system.
- * It can hold any type of object (`E`) as the item itself and keeps track of
- * its quantity.
- * 
- * @param <E> The type of object this InventoryItem holds.
- */
+// Generic inventory item class
 public class InventoryItem<E> {
-    /**
-     * The actual item stored in this inventory item.
-     */
+    // Item stored in inventory
     private E book;
-    /**
-     * The quantity of the item currently in stock.
-     */
+    // Current stock quantity
     private int quantity;
 
-    /**
-     * Constructor for InventoryItem.
-     * 
-     * @param book     The item to be stored.
-     * @param quantity The initial quantity of the item in stock.
-     * @throws IllegalArgumentException if the book is null or the quantity is
-     *                                  negative.
-     */
+    // Constructor
     public InventoryItem(E book, int quantity) {
         if (book == null) {
             throw new IllegalArgumentException("Book cannot be null");
@@ -36,30 +19,17 @@ public class InventoryItem<E> {
         this.quantity = quantity;
     }
 
-    /**
-     * Getter method to access the item stored in this InventoryItem.
-     * 
-     * @return The item object.
-     */
+    // Get stored item
     public E getBook() {
         return book;
     }
 
-    /**
-     * Getter method to access the current quantity of the item in stock.
-     * 
-     * @return The quantity of the item.
-     */
+    // Get current quantity
     public int getQuantity() {
         return quantity;
     }
 
-    /**
-     * Setter method to update the quantity of the item in stock.
-     * 
-     * @param quantity The new quantity of the item.
-     * @throws IllegalArgumentException if the new quantity is negative.
-     */
+    // Set new quantity
     public void setQuantity(int quantity) {
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantity cannot be negative");

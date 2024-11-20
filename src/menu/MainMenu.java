@@ -3,7 +3,6 @@ package menu;
 import services.BookService;
 import services.OrderService;
 import java.util.Scanner;
-
 import data_structures.NavigationStack;
 
 public class MainMenu {
@@ -12,14 +11,7 @@ public class MainMenu {
     private final Scanner scanner;
     private final NavigationStack<Runnable> navigationStack;
 
-    /**
-     * Constructor that initializes member variables.
-     *
-     * @param bookService  An instance of the `BookService` class.
-     * @param orderService An instance of the `OrderService` class.
-     * @throws IllegalArgumentException If either `bookService` or `orderService` is
-     *                                  null.
-     */
+    // Initialize menus, scanner and navigation stack
     public MainMenu(BookService bookService, OrderService orderService) {
         if (bookService == null || orderService == null) {
             throw new IllegalArgumentException("BookService and OrderService cannot be null");
@@ -30,16 +22,12 @@ public class MainMenu {
         this.navigationStack = new NavigationStack<>();
     }
 
-    /**
-     * Starts the main menu loop.
-     */
+    // Start the main menu
     public void start() {
         showMainMenu();
     }
 
-    /**
-     * Displays the main menu and handles user interaction.
-     */
+    // Display and handle main menu options
     public void showMainMenu() {
         while (true) {
             System.out.println("\n===== Bookstore Management System =====");
@@ -52,21 +40,19 @@ public class MainMenu {
             int choice = Integer.parseInt(scanner.nextLine());
             switch (choice) {
                 case 1:
-                    // Push the current menu display function onto the stack
-                    // for back navigation from admin menu.
+                    // Navigate to admin menu
                     navigationStack.push(() -> showMainMenu());
                     adminMenu.show();
                     break;
                 case 2:
-                    // Push the current menu display function onto the stack
-                    // for back navigation from customer menu.
+                    // Navigate to customer menu
                     navigationStack.push(() -> showMainMenu());
                     customerMenu.show();
                     break;
                 case 3:
-                    // Clear the navigation stack to remove any remaining entries.
+                    // Exit system
                     while (!navigationStack.isEmpty()) {
-                        navigationStack.pop(); // Clear stack by popping all items
+                        navigationStack.pop();
                     }
                     System.out.println("Thank you for using our system!");
                     System.exit(0);
@@ -76,11 +62,7 @@ public class MainMenu {
         }
     }
 
-    /**
-     * Provides access to the navigation stack.
-     *
-     * @return The `NavigationStack` instance used for navigation tracking.
-     */
+    // Get navigation stack
     public NavigationStack<Runnable> getNavigationStack() {
         return navigationStack;
     }
