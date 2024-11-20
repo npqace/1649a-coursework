@@ -1,6 +1,7 @@
 package data_structures;
 
 import interfaces.IOrderQueue;
+import models.Order;
 
 public class OrderQueue<E> implements IOrderQueue<E> {
     // Inner class to represent a node in the linked list used for the queue
@@ -41,15 +42,17 @@ public class OrderQueue<E> implements IOrderQueue<E> {
         try {
             Node<E> newNode = new Node<>(element);
             if (isEmpty()) {
-                // If the queue is empty, set head to the new node
-                this.head = newNode;
+                head = newNode;
             } else {
-                // Find the last node and add the new node after it
-                Node<E> current = this.head;
+                Node<E> current = head;
                 while (current.next != null) {
                     current = current.next;
                 }
                 current.next = newNode;
+                // Set the next pointer for the Order
+                if (element instanceof Order) {
+                    ((Order) current.element).next = (Order) element;
+                }
             }
             size++;
         } catch (Exception e) {
@@ -70,15 +73,16 @@ public class OrderQueue<E> implements IOrderQueue<E> {
         }
 
         try {
-            E oldElement = this.head.element;
-            if (this.size == 1) {
-                // If there's only one element, set head to null
-                this.head = null;
+            E oldElement = head.element;
+            if (size == 1) {
+                head = null;
             } else {
-                // Move the head pointer to the next node
-                Node<E> next = this.head.next;
-                this.head.next = null;
-                this.head = next;
+                Node<E> next = head.next;
+                head.next = null;
+                if (oldElement instanceof Order) {
+                    ((Order) oldElement).next = null; // Clear next pointer
+                }
+                head = next;
             }
             size--;
             return oldElement;
