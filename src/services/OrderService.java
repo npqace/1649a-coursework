@@ -6,36 +6,23 @@ import models.Book;
 import models.Order;
 import models.enums.OrderStatus;
 
-/**
- * Service class for managing orders in the system.
- * Handles creating, updating, and processing orders.
- */
+// Manages order operations in the system
 public class OrderService {
-    private OrderQueue<Order> orderQueue; // Queue to manage orders in FIFO order
-    private OrderQueue<Order> completedQueue; // Queue to store completed/cancelled orders
-    private BookService bookService; // Service to handle book-related operations
+    private OrderQueue<Order> activeQueue; // Active orders queue
+    private OrderQueue<Order> completedQueue; // Completed orders queue
+    private BookService bookService; // Book management service
 
-    /**
-     * Constructor to initialize the OrderService with a BookService instance.
-     * 
-     * @param bookService The service for book management.
-     */
+    // Initialize with BookService
     public OrderService(BookService bookService) {
         if (bookService == null) {
             throw new IllegalArgumentException("Book service cannot be null");
         }
-        this.orderQueue = new OrderQueue<>();
+        this.activeQueue = new OrderQueue<>();
         this.completedQueue = new OrderQueue<>();
         this.bookService = bookService;
     }
 
-    /**
-     * Creates a new order with the provided customer details.
-     * 
-     * @param customerName    The customer's name.
-     * @param shippingAddress The shipping address.
-     * @return A new Order instance.
-     */
+    // Create new order
     public Order createOrder(String customerName, String shippingAddress) {
         if (customerName == null || customerName.trim().isEmpty()) {
             throw new IllegalArgumentException("Customer name cannot be empty");
@@ -46,14 +33,7 @@ public class OrderService {
         return new Order(customerName.trim(), shippingAddress.trim());
     }
 
-    /**
-     * Adds a book to an order if available in stock.
-     * 
-     * @param order    The order to which the book will be added.
-     * @param bookId   The ID of the book.
-     * @param quantity The quantity of the book to add.
-     * @return True if the book was successfully added, false otherwise.
-     */
+    // Add book to order if in stock
     public boolean addBookToOrder(Order order, int bookId, int quantity) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
@@ -77,12 +57,7 @@ public class OrderService {
         return false;
     }
 
-    /**
-     * Finds an order in the queue by its ID.
-     * 
-     * @param orderId The ID of the order to find.
-     * @return The found order, or null if not found.
-     */
+    // Find order in specified queue
     private Order findOrderInQueue(OrderQueue<Order> queue, int orderId) {
         OrderQueue<Order> tempQueue = new OrderQueue<>();
         Order foundOrder = null;
@@ -96,7 +71,6 @@ public class OrderService {
                 tempQueue.offer(order);
             }
 
-            // Restore the queue
             while (!tempQueue.isEmpty()) {
                 queue.offer(tempQueue.poll());
             }
@@ -106,28 +80,20 @@ public class OrderService {
         return foundOrder;
     }
 
-    // Public method to search both queues
+    // Search for order in both queues
     public Order findOrderById(int orderId) {
         if (orderId <= 0) {
             throw new IllegalArgumentException("Order ID must be positive");
         }
 
-        // Search active orders first
-        Order order = findOrderInQueue(orderQueue, orderId);
-
-        // If not found, search completed orders
+        Order order = findOrderInQueue(activeQueue, orderId);
         if (order == null) {
             order = findOrderInQueue(completedQueue, orderId);
         }
-
         return order;
     }
 
-    /**
-     * Submits an order to the queue after validation.
-     * 
-     * @param order The order to submit.
-     */
+    // Submit order to queue
     public void submitOrder(Order order) {
         if (!isValidOrder(order)) {
             throw new IllegalArgumentException("Invalid order!");
@@ -137,35 +103,26 @@ public class OrderService {
             if (!validateInventory(order)) {
                 order.setStatus(OrderStatus.CANCELLED);
                 completedQueue.offer(order);
-                // throw new IllegalStateException("Insufficient stock for one or more items");
             }
 
-            // Update inventory and confirm order
             updateInventoryStock(order);
             order.setStatus(OrderStatus.CONFIRMED);
-            orderQueue.offer(order);
+            activeQueue.offer(order);
         } catch (Exception e) {
-            // System.out.println("Error submitting order: " + e.getMessage());
-            // throw e;
         }
     }
 
-    /**
-     * Processes the next order in the queue.
-     * If the order is valid and all items are in stock, it is confirmed.
-     * Otherwise, the order is canceled.
-     */
+    // Process next order in queue
     public void processNextOrder() {
-        if (orderQueue.isEmpty()) {
+        if (activeQueue.isEmpty()) {
             System.out.println("No orders to process");
             return;
         }
 
-        Order order = orderQueue.poll();
+        Order order = activeQueue.poll();
         if (order == null)
             return;
 
-        // Display order details first
         System.out.println("\nProcessing Order:");
         displayOrder(order);
 
@@ -173,7 +130,7 @@ public class OrderService {
             case CONFIRMED:
                 order.setStatus(OrderStatus.SHIPPING);
                 System.out.println("Order #" + order.getOrderId() + " is now shipping");
-                orderQueue.offer(order);
+                activeQueue.offer(order);
                 break;
             case SHIPPING:
                 order.setStatus(OrderStatus.DELIVERED);
@@ -187,33 +144,22 @@ public class OrderService {
         }
     }
 
-    // private void processPendingOrder(Order order) {
-    // if (validateInventory(order)) {
-    // updateInventoryStock(order);
-    // order.setStatus(OrderStatus.CONFIRMED);
-    // System.out.println("Order #" + order.getOrderId() + " is confirmed");
-    // } else {
-    // order.setStatus(OrderStatus.CANCELLED);
-    // System.out.println("Order #" + order.getOrderId() + " is cancelled -
-    // insufficient stock");
-    // moveToCompleted(order);
-    // }
-    // }
-
+    // Move order to completed queue
     private void moveToCompleted(Order order) {
-        orderQueue.poll(); // Remove from active queue
+        activeQueue.poll();
         completedQueue.offer(order);
     }
 
+    // Display all orders in both queues
     public void displayAllOrders() {
         System.out.println("\n=== Current Order Status ===");
 
         System.out.println("\nActive Orders:");
-        if (orderQueue.isEmpty()) {
+        if (activeQueue.isEmpty()) {
             System.out.println("No active orders");
         } else {
             System.out.println(Order.getTableHeader());
-            Order current = orderQueue.peek();
+            Order current = activeQueue.peek();
             while (current != null) {
                 System.out.println(current);
                 current = current.next;
@@ -233,18 +179,17 @@ public class OrderService {
         }
     }
 
-    /**
-     * Displays only active orders from the queue.
-     * Active orders exclude those with statuses DELIVERED or CANCELLED.
-     */
+    // Display active orders
     public void displayActiveOrders() {
-        displayQueue(orderQueue, "Active");
+        displayQueue(activeQueue, "Active");
     }
 
+    // Display completed orders
     public void displayCompletedOrders() {
         displayQueue(completedQueue, "Completed");
     }
 
+    // Display orders from specified queue
     private void displayQueue(OrderQueue<Order> queue, String type) {
         if (queue.isEmpty()) {
             System.out.println("No " + type.toLowerCase() + " orders");
@@ -257,16 +202,11 @@ public class OrderService {
         Order current = queue.peek();
         while (current != null) {
             System.out.println(current);
-            current = current.next; // Need to add next pointer to Order class
+            current = current.next;
         }
     }
 
-    /**
-     * Updates the inventory stock based on the items in the processed order.
-     * 
-     * @param order The order being processed.
-     * @throws IllegalStateException If any item's stock is insufficient.
-     */
+    // Update inventory after order processing
     private void updateInventoryStock(Order order) {
         InventoryItem<Book>[] orderItems = order.getBooks().getEntries();
 
@@ -281,11 +221,11 @@ public class OrderService {
                 throw new IllegalStateException("Insufficient stock for book: " + book.getTitle());
             }
 
-            // Update the stock for the book
             bookService.updateStock(book.getBookID(), currentStock - orderedQuantity);
         }
     }
 
+    // Check if inventory has sufficient stock
     private boolean validateInventory(Order order) {
         for (InventoryItem<Book> item : order.getBooks().getEntries()) {
             if (item.getBook().getQuantity() < item.getQuantity()) {
@@ -295,6 +235,7 @@ public class OrderService {
         return true;
     }
 
+    // Validate order details
     private boolean isValidOrder(Order order) {
         return order != null &&
                 !order.getBooks().isEmpty() &&
@@ -303,16 +244,12 @@ public class OrderService {
                 order.getShippingAddress() != null;
     }
 
-    /**
-     * Displays the details of a specific order.
-     * 
-     * @param order The order to display.
-     */
+    // Display single order details
     public void displayOrder(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
         }
-        System.out.println(Order.getTableHeader()); // Print the table header
-        System.out.println(order.toString()); // Print the order details
+        System.out.println(Order.getTableHeader());
+        System.out.println(order.toString());
     }
 }
