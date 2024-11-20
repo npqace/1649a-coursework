@@ -193,6 +193,7 @@ public class CustomerMenu {
         try {
             int orderId = Integer.parseInt(scanner.nextLine());
             Order order = orderService.findOrderById(orderId);
+            
             if (order != null) {
                 System.out.println("\nOrder Details:");
                 orderService.displayOrder(order);

@@ -24,6 +24,7 @@ public class Order {
     private IInventoryList<Book> books; // Book and its quantity
     private double totalPrice;
     private OrderStatus status;
+    public Order next;
 
     /**
      * Creates a new order.
@@ -74,6 +75,10 @@ public class Order {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    public Order getNext() {
+        return next;
     }
 
     /**

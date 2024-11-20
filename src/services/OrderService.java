@@ -12,6 +12,7 @@ import models.enums.OrderStatus;
  */
 public class OrderService {
     private OrderQueue<Order> orderQueue; // Queue to manage orders in FIFO order
+    private OrderQueue<Order> completedQueue; // Queue to store completed/cancelled orders
     private BookService bookService; // Service to handle book-related operations
 
     /**
@@ -24,6 +25,7 @@ public class OrderService {
             throw new IllegalArgumentException("Book service cannot be null");
         }
         this.orderQueue = new OrderQueue<>();
+        this.completedQueue = new OrderQueue<>();
         this.bookService = bookService;
     }
 
@@ -81,27 +83,22 @@ public class OrderService {
      * @param orderId The ID of the order to find.
      * @return The found order, or null if not found.
      */
-    public Order findOrderById(int orderId) {
-        if (orderId <= 0) {
-            throw new IllegalArgumentException("Order ID must be positive");
-        }
-
+    private Order findOrderInQueue(OrderQueue<Order> queue, int orderId) {
         OrderQueue<Order> tempQueue = new OrderQueue<>();
         Order foundOrder = null;
 
         try {
-            // Search through the queue while preserving its order
-            while (!orderQueue.isEmpty()) {
-                Order order = orderQueue.poll();
+            while (!queue.isEmpty()) {
+                Order order = queue.poll();
                 if (order.getOrderId() == orderId) {
                     foundOrder = order;
                 }
                 tempQueue.offer(order);
             }
 
-            // Restore the queue after the search
+            // Restore the queue
             while (!tempQueue.isEmpty()) {
-                orderQueue.offer(tempQueue.poll());
+                queue.offer(tempQueue.poll());
             }
         } catch (Exception e) {
             System.out.println("Error finding order: " + e.getMessage());
@@ -109,75 +106,21 @@ public class OrderService {
         return foundOrder;
     }
 
-    /**
-     * Displays all orders currently in the queue.
-     */
-    public void displayAllOrders() {
-        if (orderQueue.isEmpty()) {
-            System.out.println("No orders found");
-            return;
+    // Public method to search both queues
+    public Order findOrderById(int orderId) {
+        if (orderId <= 0) {
+            throw new IllegalArgumentException("Order ID must be positive");
         }
 
-        OrderQueue<Order> tempQueue = new OrderQueue<>();
-        System.out.println(Order.getTableHeader()); // Print table header
+        // Search active orders first
+        Order order = findOrderInQueue(orderQueue, orderId);
 
-        try {
-            // Print and temporarily remove orders from the queue
-            while (!orderQueue.isEmpty()) {
-                Order order = orderQueue.poll();
-                System.out.println(order);
-                tempQueue.offer(order);
-            }
-
-            // Restore the queue
-            while (!tempQueue.isEmpty()) {
-                orderQueue.offer(tempQueue.poll());
-            }
-        } catch (Exception e) {
-            System.out.println("Error displaying orders: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Displays only active orders from the queue.
-     * Active orders exclude those with statuses DELIVERED or CANCELLED.
-     */
-    public void displayActiveOrders() {
-        if (orderQueue.isEmpty()) {
-            System.out.println("No active orders");
-            return;
+        // If not found, search completed orders
+        if (order == null) {
+            order = findOrderInQueue(completedQueue, orderId);
         }
 
-        OrderQueue<Order> tempQueue = new OrderQueue<>();
-        System.out.println(Order.getTableHeader());
-
-        try {
-            while (!orderQueue.isEmpty()) {
-                Order order = orderQueue.poll();
-                if (isActiveOrder(order)) {
-                    System.out.println(order);
-                }
-                tempQueue.offer(order);
-            }
-
-            // Restore the queue
-            while (!tempQueue.isEmpty()) {
-                orderQueue.offer(tempQueue.poll());
-            }
-        } catch (Exception e) {
-            System.out.println("Error displaying active orders: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Checks if an order is active based on its status.
-     * 
-     * @param order The order to check.
-     * @return True if the order is active, false otherwise.
-     */
-    private boolean isActiveOrder(Order order) {
-        return order.getStatus() != OrderStatus.DELIVERED &&
-                order.getStatus() != OrderStatus.CANCELLED;
+        return order;
     }
 
     /**
@@ -186,103 +129,135 @@ public class OrderService {
      * @param order The order to submit.
      */
     public void submitOrder(Order order) {
-        if (order == null) {
-            throw new IllegalArgumentException("Order cannot be null");
+        if (!isValidOrder(order)) {
+            throw new IllegalArgumentException("Invalid order!");
         }
-        if (order.getBooks().isEmpty()) {
-            throw new IllegalArgumentException("Cannot submit empty order");
-        }
-        if (order.getTotalPrice() <= 0) {
-            throw new IllegalArgumentException("Order total price must be positive");
-        }
-        if (order.getCustomerName() == null || order.getShippingAddress() == null) {
-            throw new IllegalArgumentException("Order must have valid customer information");
-        }
+
         try {
+            if (!validateInventory(order)) {
+                order.setStatus(OrderStatus.CANCELLED);
+                completedQueue.offer(order);
+                // throw new IllegalStateException("Insufficient stock for one or more items");
+            }
+
+            // Update inventory and confirm order
+            updateInventoryStock(order);
+            order.setStatus(OrderStatus.CONFIRMED);
             orderQueue.offer(order);
         } catch (Exception e) {
-            System.out.println("Error submitting order: " + e.getMessage());
+            // System.out.println("Error submitting order: " + e.getMessage());
+            // throw e;
         }
     }
 
     /**
-     * Processes the next pending order in the queue.
+     * Processes the next order in the queue.
      * If the order is valid and all items are in stock, it is confirmed.
      * Otherwise, the order is canceled.
      */
-    public void processNextPendingOrder() {
+    public void processNextOrder() {
         if (orderQueue.isEmpty()) {
-            System.out.println("No orders in queue");
+            System.out.println("No orders to process");
             return;
         }
 
-        OrderQueue<Order> tempQueue = new OrderQueue<>();
-        Order pendingOrder = null;
+        Order order = orderQueue.poll();
+        if (order == null)
+            return;
 
-        try {
-            // Find the next order with PENDING status
-            while (!orderQueue.isEmpty() && pendingOrder == null) {
-                Order order = orderQueue.poll();
-                if (order.getStatus() == OrderStatus.PENDING) {
-                    pendingOrder = order;
-                }
-                tempQueue.offer(order);
+        // Display order details first
+        System.out.println("\nProcessing Order:");
+        displayOrder(order);
+
+        switch (order.getStatus()) {
+            case CONFIRMED:
+                order.setStatus(OrderStatus.SHIPPING);
+                System.out.println("Order #" + order.getOrderId() + " is now shipping");
+                orderQueue.offer(order);
+                break;
+            case SHIPPING:
+                order.setStatus(OrderStatus.DELIVERED);
+                System.out.println("Order #" + order.getOrderId() + " is delivered");
+                moveToCompleted(order);
+                break;
+            case DELIVERED:
+            case CANCELLED:
+                moveToCompleted(order);
+                break;
+        }
+    }
+
+    // private void processPendingOrder(Order order) {
+    // if (validateInventory(order)) {
+    // updateInventoryStock(order);
+    // order.setStatus(OrderStatus.CONFIRMED);
+    // System.out.println("Order #" + order.getOrderId() + " is confirmed");
+    // } else {
+    // order.setStatus(OrderStatus.CANCELLED);
+    // System.out.println("Order #" + order.getOrderId() + " is cancelled -
+    // insufficient stock");
+    // moveToCompleted(order);
+    // }
+    // }
+
+    private void moveToCompleted(Order order) {
+        orderQueue.poll(); // Remove from active queue
+        completedQueue.offer(order);
+    }
+
+    public void displayAllOrders() {
+        System.out.println("\n=== Current Order Status ===");
+
+        System.out.println("\nActive Orders:");
+        if (orderQueue.isEmpty()) {
+            System.out.println("No active orders");
+        } else {
+            System.out.println(Order.getTableHeader());
+            Order current = orderQueue.peek();
+            while (current != null) {
+                System.out.println(current);
+                current = current.next;
             }
+        }
 
-            // Process the remaining orders in the queue
-            while (!orderQueue.isEmpty()) {
-                tempQueue.offer(orderQueue.poll());
+        System.out.println("\nCompleted Orders:");
+        if (completedQueue.isEmpty()) {
+            System.out.println("No completed orders");
+        } else {
+            System.out.println(Order.getTableHeader());
+            Order current = completedQueue.peek();
+            while (current != null) {
+                System.out.println(current);
+                current = current.next;
             }
+        }
+    }
 
-            // Process the pending order if found
-            if (pendingOrder != null) {
-                System.out.println("\nProcessing Order #" + pendingOrder.getOrderId());
-                System.out.println("Order Details:");
-                displayOrder(pendingOrder);
+    /**
+     * Displays only active orders from the queue.
+     * Active orders exclude those with statuses DELIVERED or CANCELLED.
+     */
+    public void displayActiveOrders() {
+        displayQueue(orderQueue, "Active");
+    }
 
-                boolean allInStock = true;
-                String outOfStockBookTitle = "";
+    public void displayCompletedOrders() {
+        displayQueue(completedQueue, "Completed");
+    }
 
-                // Check if all items in the order are in stock
-                InventoryItem<Book>[] items = pendingOrder.getBooks().getEntries();
-                for (int i = 0; i < items.length; i++) {
-                    InventoryItem<Book> item = items[i];
-                    Book book = item.getBook();
-                    int requiredQuantity = item.getQuantity();
-                    if (book.getQuantity() < requiredQuantity) {
-                        allInStock = false;
-                        outOfStockBookTitle = book.getTitle();
-                        break;
-                    }
-                }
+    private void displayQueue(OrderQueue<Order> queue, String type) {
+        if (queue.isEmpty()) {
+            System.out.println("No " + type.toLowerCase() + " orders");
+            return;
+        }
 
-                // If all items are in stock, confirm the order and update inventory
-                if (allInStock) {
-                    try {
-                        updateInventoryStock(pendingOrder);
-                        pendingOrder.setStatus(OrderStatus.CONFIRMED);
-                        System.out.println("Order #" + pendingOrder.getOrderId() + " has been confirmed");
-                    } catch (IllegalStateException e) {
-                        pendingOrder.setStatus(OrderStatus.CANCELLED);
-                        System.out.println("Order is canceled. " + e.getMessage());
-                    }
-                } else {
-                    // Cancel the order if any item is out of stock
-                    pendingOrder.setStatus(OrderStatus.CANCELLED);
-                    System.out.println(
-                            "Order #" + pendingOrder.getOrderId() + " has been canceled. " + outOfStockBookTitle
-                                    + " is out of stock.");
-                }
-            } else {
-                System.out.println("No pending orders found");
-            }
+        System.out.println("\n=== " + type + " Orders ===");
+        System.out.println(Order.getTableHeader());
 
-            // Restore the queue after processing
-            while (!tempQueue.isEmpty()) {
-                orderQueue.offer(tempQueue.poll());
-            }
-        } catch (Exception e) {
-            System.out.println("Error processing order: " + e.getMessage());
+        Order current = queue.peek();
+        while (current != null) {
+            System.out.println(current);
+            current = current.next; // Need to add next pointer to Order class
         }
     }
 
@@ -311,47 +286,21 @@ public class OrderService {
         }
     }
 
-    /**
-     * Updates the status of an order if the transition is valid.
-     * 
-     * @param order     The order whose status needs to be updated.
-     * @param newStatus The new status to set.
-     */
-    public void updateOrderStatus(Order order, OrderStatus newStatus) {
-        if (order == null) {
-            throw new IllegalArgumentException("Order cannot be null");
+    private boolean validateInventory(Order order) {
+        for (InventoryItem<Book> item : order.getBooks().getEntries()) {
+            if (item.getBook().getQuantity() < item.getQuantity()) {
+                return false;
+            }
         }
-        if (newStatus == null) {
-            throw new IllegalArgumentException("Status cannot be null");
-        }
-
-        OrderStatus currentStatus = order.getStatus();
-        if (isValidStatusTransition(currentStatus, newStatus)) {
-            order.setStatus(newStatus);
-        } else {
-            throw new IllegalStateException("Invalid status transition from " +
-                    currentStatus + " to " + newStatus);
-        }
+        return true;
     }
 
-    /**
-     * Validates whether the status transition for an order is allowed.
-     * 
-     * @param current The current status of the order.
-     * @param next    The desired new status.
-     * @return True if the transition is valid, false otherwise.
-     */
-    private boolean isValidStatusTransition(OrderStatus current, OrderStatus next) {
-        switch (current) {
-            case PENDING:
-                return next == OrderStatus.CONFIRMED || next == OrderStatus.CANCELLED;
-            case CONFIRMED:
-                return next == OrderStatus.SHIPPING;
-            case SHIPPING:
-                return next == OrderStatus.DELIVERED;
-            default:
-                return false;
-        }
+    private boolean isValidOrder(Order order) {
+        return order != null &&
+                !order.getBooks().isEmpty() &&
+                order.getTotalPrice() > 0 &&
+                order.getCustomerName() != null &&
+                order.getShippingAddress() != null;
     }
 
     /**

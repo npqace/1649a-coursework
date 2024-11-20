@@ -132,11 +132,12 @@ public class AdminMenu {
     private void showOrderManagementMenu() {
         while (true) {
             System.out.println("\n=== Order Management Menu ===");
-            System.out.println("1. View all orders");
-            System.out.println("2. View active orders");
-            System.out.println("3. Process pending orders");
-            System.out.println("4. Update order status");
-            System.out.println("5. Back to Admin Menu");
+            System.out.println("1. View all orders in queue");
+            System.out.println("2. Process next order");
+            System.out.println("3. View order details by ID");
+            System.out.println("4. View active orders");
+            System.out.println("5. View completed orders");
+            System.out.println("6. Back to Admin Menu");
             System.out.print("Enter your choice: ");
 
             try {
@@ -148,20 +149,21 @@ public class AdminMenu {
                         waitForKeyPress();
                         break;
                     case 2:
-                        // Display active orders using the orderService
-                        orderService.displayActiveOrders();
+                        orderService.processNextOrder();
                         waitForKeyPress();
                         break;
                     case 3:
-                        // Process the next pending order using the orderService
-                        orderService.processNextPendingOrder();
-                        waitForKeyPress();
+                        viewOrderDetails();
                         break;
                     case 4:
-                        // Call updateOrderStatus() to handle updating order status
-                        updateOrderStatus();
+                        orderService.displayActiveOrders();
+                        waitForKeyPress();
                         break;
                     case 5:
+                        orderService.displayCompletedOrders();
+                        waitForKeyPress();
+                        break;
+                    case 6:
                         // Check if there's a previous menu to return to
                         if (!mainMenu.getNavigationStack().isEmpty()) {
                             // Pop the top element from the navigation stack and call its run method (back
@@ -320,67 +322,24 @@ public class AdminMenu {
         waitForKeyPress();
     }
 
-    /**
-     * Updates the status of an existing order.
-     * 
-     * This method displays active orders, prompts the user to enter the order ID
-     * and new status, and updates the order status using the `OrderService`.
-     * Error handling is included to catch invalid input and potential exceptions
-     * during the update process.
-     */
-    private void updateOrderStatus() {
-        System.out.println("\n=== Update Order Status ===");
-        orderService.displayActiveOrders();
-
+    private void viewOrderDetails() {
+        System.out.print("Enter order ID: ");
         try {
-            System.out.print("\nEnter order ID to update (0 to cancel): ");
             int orderId = Integer.parseInt(scanner.nextLine());
-            if (orderId == 0)
-                return; // Cancel the update process
-
             Order order = orderService.findOrderById(orderId);
-            if (order == null || !isActiveOrder(order)) {
-                System.out.println("Invalid order ID");
-                return;
+            
+            if (order != null) {
+                System.out.println("\nOrder Details:");
+                orderService.displayOrder(order);
+            } else {
+                System.out.println("Order not found");
             }
-
-            if (order.getStatus() == OrderStatus.PENDING) {
-                System.out.println("The order is not confirmed!");
-                waitForKeyPress();
-                return;
-            }
-
-            System.out.println("\nAvailable statuses:");
-            System.out.println("1. SHIPPING");
-            System.out.println("2. DELIVERED");
-            System.out.print("Enter new status number(1-2): ");
-
-            int statusChoice = Integer.parseInt(scanner.nextLine());
-            OrderStatus newStatus = switch (statusChoice) {
-                case 1 -> OrderStatus.SHIPPING;
-                case 2 -> OrderStatus.DELIVERED;
-                default -> throw new IllegalArgumentException("Invalid status choice");
-            };
-
-            orderService.updateOrderStatus(order, newStatus);
-            System.out.println("Order status updated successfully");
         } catch (NumberFormatException e) {
-            System.out.println("Invalid input. Please enter valid numbers for order ID and status choice.");
-        } catch (Exception e) {
+            System.out.println("Invalid order ID format");
+        } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
         }
         waitForKeyPress();
-    }
-
-    /**
-     * Checks if an order is currently active (i.e., not delivered or canceled).
-     * 
-     * @param order The order to check.
-     * @return `true` if the order is active, `false` otherwise.
-     */
-    private boolean isActiveOrder(Order order) {
-        return order.getStatus() != OrderStatus.DELIVERED &&
-                order.getStatus() != OrderStatus.CANCELLED;
     }
 
     /**
